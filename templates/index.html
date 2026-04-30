@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1ClickQR – Instant QR Code Generator</title>
+  <meta name="description" content="1ClickQR: Paste any URL and generate a beautiful QR code instantly. Fast, free, and cute!" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:        #ff6eb4;
+      --pink-light:  #ffb3d9;
+      --pink-pale:   #ffe0f0;
+      --pink-glow:   rgba(255, 110, 180, 0.25);
+      --pink-dim:    rgba(255, 110, 180, 0.12);
+      --white:       #ffffff;
+      --off-white:   #fff5fa;
+      --border:      #f8c8e4;
+      --muted:       #c080a8;
+      --text:        #3d1a2e;
+      --error:       #e84393;
+      --card-bg:     rgba(255, 255, 255, 0.72);
+    }
+
+    body {
+      background: linear-gradient(135deg, #ffe4f3 0%, #fcd9ed 40%, #f9cfea 70%, #fce4f7 100%);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 2rem 1rem 3rem;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ── Floating sparkles background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,182,220,0.45) 0%, transparent 45%),
+        radial-gradient(circle at 85% 75%, rgba(255,150,210,0.35) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(255,220,240,0.2) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Hero Header ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      margin-bottom: 1.8rem;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-title {
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      background: linear-gradient(135deg, #ff3fa4, #ff87ce, #e040a0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 2px 12px rgba(255,80,170,0.3));
+      margin-bottom: 0.6rem;
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .hero-sub span {
+      color: var(--pink);
+    }
+
+    .sakura-row {
+      font-size: 1.4rem;
+      margin-bottom: 0.3rem;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-5px); }
+    }
+
+    /* ── Anime GIF display ── */
+    .anime-girl-wrap {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 1.4rem;
+      animation: fadeUp 0.6s ease 0.15s both;
+    }
+
+    .anime-girl-wrap img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 4px solid var(--pink-light);
+      box-shadow:
+        0 0 0 6px var(--pink-pale),
+        0 8px 30px rgba(255,110,180,0.35);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .anime-girl-wrap img.hidden {
+      opacity: 0;
+      transform: scale(0.85);
+      pointer-events: none;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    .anime-girl-wrap img.visible {
+      opacity: 1;
+      transform: scale(1);
+      position: relative;
+    }
+
+    /* ── Card ── */
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1.5px solid var(--border);
+      border-radius: 28px;
+      padding: 2.4rem 2.2rem;
+      width: 100%;
+      max-width: 480px;
+      box-shadow:
+        0 4px 24px rgba(255,110,180,0.15),
+        0 20px 60px rgba(220,80,150,0.12);
+      animation: fadeUp 0.65s ease 0.1s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      color: var(--pink);
+      background: var(--pink-dim);
+      border: 1px solid rgba(255, 110, 180, 0.3);
+      padding: 4px 14px;
+      border-radius: 99px;
+      margin-bottom: 1.1rem;
+      text-transform: uppercase;
+    }
+
+    /* ── Input ── */
+    label.url-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.45rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--off-white);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.95rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 0.75rem;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 4px var(--pink-glow);
+    }
+
+    input[type="text"]::placeholder { color: var(--pink-light); }
+
+    /* ── Button ── */
+    button.generate-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ff6eb4, #e840a0);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 0.95rem;
+      font-size: 1rem;
+      font-weight: 800;
+      font-family: 'Nunito', sans-serif;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(255,110,180,0.4);
+    }
+
+    button.generate-btn:hover {
+      opacity: 0.93;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(255,110,180,0.5);
+    }
+    button.generate-btn:active { transform: translateY(0); }
+    button.generate-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* shimmer on hover */
+    button.generate-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -75%;
+      width: 50%; height: 200%;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+      transform: skewX(-20deg);
+      transition: left 0.6s ease;
+    }
+    button.generate-btn:hover::after { left: 130%; }
+
+    .btn-text { transition: opacity 0.2s; }
+    .btn-loader {
+      position: absolute; inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    button.loading .btn-text { opacity: 0; }
+    button.loading .btn-loader { display: flex; }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error ── */
+    .error-msg {
+      color: var(--error);
+      font-size: 0.83rem;
+      font-family: 'DM Mono', monospace;
+      background: rgba(232, 67, 147, 0.07);
+      border: 1px solid rgba(232, 67, 147, 0.22);
+      border-radius: 10px;
+      padding: 0.55rem 0.9rem;
+      width: 100%;
+      display: none;
+      margin-top: 0.5rem;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── Output ── */
+    .output {
+      margin-top: 1.8rem;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      animation: fadeUp 0.4s ease both;
+    }
+    .output.visible { display: flex; }
+
+    .divider {
+      width: 100%;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, var(--pink-light), transparent);
+      border-radius: 99px;
+    }
+
+    .qr-wrapper {
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.2rem;
+      box-shadow:
+        0 0 0 1.5px var(--border),
+        0 12px 40px rgba(255,110,180,0.2);
+      position: relative;
+    }
+
+    .qr-wrapper::before {
+      content: '✨';
+      position: absolute;
+      top: -14px; right: -10px;
+      font-size: 1.3rem;
+      animation: float 2.5s ease-in-out infinite;
+    }
+
+    .qr-wrapper img {
+      display: block;
+      width: 200px;
+      height: 200px;
+      border-radius: 8px;
+    }
+
+    .qr-label {
+      font-size: 0.78rem;
+      font-family: 'DM Mono', monospace;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    button.download-btn {
+      background: transparent;
+      color: var(--pink);
+      border: 1.5px solid rgba(255, 110, 180, 0.45);
+      font-size: 0.88rem;
+      font-weight: 700;
+      padding: 0.65rem 1.8rem;
+      width: auto;
+      border-radius: 99px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 2px 10px rgba(255,110,180,0.12);
+    }
+
+    button.download-btn:hover {
+      background: var(--pink-dim);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(255,110,180,0.25);
+      opacity: 1;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      position: relative;
+      z-index: 1;
+      margin-top: 2rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .footer span { color: var(--pink); }
+
+    /* ── Floating petals ── */
+    .petal {
+      position: fixed;
+      top: -30px;
+      font-size: 1.2rem;
+      animation: petalFall linear infinite;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.7;
+    }
+
+    @keyframes petalFall {
+      0%   { transform: translateY(0) rotate(0deg);   opacity: 0.8; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating sakura petals -->
+  <div class="petal" style="left:8%;  animation-duration:7s;  animation-delay:0s;">🌸</div>
+  <div class="petal" style="left:22%; animation-duration:9s;  animation-delay:1.5s;">🌸</div>
+  <div class="petal" style="left:38%; animation-duration:6s;  animation-delay:0.8s;">✿</div>
+  <div class="petal" style="left:55%; animation-duration:8s;  animation-delay:2.2s;">🌸</div>
+  <div class="petal" style="left:70%; animation-duration:10s; animation-delay:0.3s;">✿</div>
+  <div class="petal" style="left:85%; animation-duration:7.5s;animation-delay:1.1s;">🌸</div>
+
+  <!-- ── Hero Title ── -->
+  <header class="hero">
+    <div class="sakura-row">🌸 ✨ 🌸</div>
+    <h1 class="hero-title">1ClickQR</h1>
+    <p class="hero-sub">
+      Paste a link → get a <span>scannable QR</span> in one click ✨<br/>
+      <small style="font-weight:500; font-size:0.85em; color:var(--muted);">Fast · Free · Kawaii</small>
+    </p>
+  </header>
+
+  <!-- ── Anime Girl GIF (switches state) ── -->
+  <div class="anime-girl-wrap" id="animeGirlWrap">
+    <!-- Shown before URL is entered / QR generated (craving / waiting) -->
+    <img
+      id="gifBefore"
+      src="{{ url_for('static', filename='girl-craving.gif') }}"
+      alt="Anime girl craving"
+      class="visible"
+    />
+    <!-- Shown after QR is generated (anime done!) -->
+    <img
+      id="gifAfter"
+      src="{{ url_for('static', filename='anime done.webp') }}"
+      alt="Anime girl done"
+      class="hidden"
+    />
+  </div>
+
+  <!-- ── Main Card ── -->
+  <main class="card" role="main">
+    <div class="badge">🎀 QR Generator</div>
+
+    <label class="url-label" for="urlInput">Enter your URL</label>
+    <input
+      type="text"
+      id="urlInput"
+      placeholder="https://your-link.com"
+      autocomplete="off"
+      aria-label="URL input"
+    />
+
+    <div class="error-msg" id="errorMsg" role="alert"></div>
+
+    <button class="generate-btn" id="generateBtn" onclick="generateQR()" aria-label="Generate QR Code">
+      <span class="btn-text">✨ Generate QR Code</span>
+      <span class="btn-loader"><div class="spinner"></div></span>
+    </button>
+
+    <!-- Output -->
+    <div class="output" id="output" aria-live="polite">
+      <div class="divider"></div>
+      <span class="qr-label">🌸 Your QR Code</span>
+      <div class="qr-wrapper">
+        <img id="qrImage" src="" alt="Generated QR Code" />
+      </div>
+      <button class="download-btn" onclick="downloadQR()" aria-label="Download QR Code as PNG">↓ Download PNG</button>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Made by<span> abhii</span> · 1ClickQR · 2026
+  </footer>
+
+  <script>
+    const input    = document.getElementById("urlInput");
+    const btn      = document.getElementById("generateBtn");
+    const output   = document.getElementById("output");
+    const qrImage  = document.getElementById("qrImage");
+    const errorMsg = document.getElementById("errorMsg");
+    const gifBefore = document.getElementById("gifBefore");
+    const gifAfter  = document.getElementById("gifAfter");
+
+    input.addEventListener("keydown", e => { if (e.key === "Enter") generateQR(); });
+
+    function setError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.classList.toggle("visible", !!msg);
+    }
+
+    function showGif(state) {
+      // state: "before" or "after"
+      if (state === "after") {
+        gifBefore.classList.remove("visible"); gifBefore.classList.add("hidden");
+        gifAfter.classList.remove("hidden");   gifAfter.classList.add("visible");
+      } else {
+        gifAfter.classList.remove("visible");  gifAfter.classList.add("hidden");
+        gifBefore.classList.remove("hidden");  gifBefore.classList.add("visible");
+      }
+    }
+
+    async function generateQR() {
+      const url = input.value.trim();
+      setError("");
+      if (!url) { setError("Please enter a URL first~ "); return; }
+
+      btn.disabled = true;
+      btn.classList.add("loading");
+      output.classList.remove("visible");
+      showGif("before");
+
+      try {
+        const res  = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          setError(data.error || "Something went wrong~");
+          showGif("before");
+        } else {
+          qrImage.src = data.image;
+          output.classList.add("visible");
+          showGif("after");   // switch to happy girl GIF after QR generated!
+        }
+      } catch (err) {
+        setError("Could not connect to the server~");
+        showGif("before");
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove("loading");
+      }
+    }
+
+    function downloadQR() {
+      const link = document.createElement("a");
+      link.href = qrImage.src;
+      link.download = "qrcode.png";
+      link.click();
+    }
+  </script>
+</body>
+</html>
