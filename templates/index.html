@@ -459,6 +459,116 @@
       box-shadow: 0 0 0 3px var(--pink-glow);
     }
 
+    .divider-dashed {
+      border-top: 1.5px dashed var(--border);
+      margin: 1.1rem 0;
+      width: 100%;
+    }
+
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .settings-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .settings-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .shape-btn-group {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .shape-btn {
+      flex: 1;
+      height: 38px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--off-white);
+      color: var(--text);
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+    }
+
+    .shape-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(255, 110, 180, 0.12);
+    }
+
+    .shape-btn.active {
+      border-color: var(--pink);
+      background: var(--pink-dim);
+      color: var(--pink);
+      box-shadow: 0 0 0 3px var(--pink-glow);
+    }
+
+    /* Styled Range Slider */
+    .size-slider-wrapper {
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .size-slider-wrapper input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 99px;
+      background: var(--border);
+      outline: none;
+      transition: background 0.15s;
+    }
+
+    .size-slider-wrapper input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--pink);
+      border: 2.5px solid var(--white);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255, 110, 180, 0.4);
+      transition: transform 0.15s, background-color 0.15s;
+    }
+
+    .size-slider-wrapper input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+      background: #e840a0;
+    }
+
+    .size-slider-wrapper input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--pink);
+      border: 2.5px solid var(--white);
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(255, 110, 180, 0.4);
+      transition: transform 0.15s, background-color 0.15s;
+    }
+
+    .size-slider-wrapper input[type="range"]::-moz-range-thumb:hover {
+      transform: scale(1.25);
+      background: #e840a0;
+    }
+
     /* ── Responsive Styling ── */
     @media (max-width: 480px) {
       body {
@@ -491,6 +601,14 @@
       .qr-wrapper img {
         width: 180px;
         height: 180px;
+      }
+      .settings-row {
+        gap: 0.9rem;
+      }
+      .shape-btn {
+        height: 34px;
+        font-size: 0.95rem;
+        border-radius: 8px;
       }
     }
 
@@ -599,6 +717,29 @@
         <button type="button" class="preset-btn" data-dark="#1a5276" data-light="#e8f4f8" style="background: linear-gradient(135deg, #1a5276 50%, #e8f4f8 50%);" title="Ocean Breeze"></button>
         <button type="button" class="preset-btn" data-dark="#6c3483" data-light="#f4ecf7" style="background: linear-gradient(135deg, #6c3483 50%, #f4ecf7 50%);" title="Lavender Dream"></button>
       </div>
+
+      <div class="divider-dashed"></div>
+
+      <div class="settings-row">
+        <!-- Shape Selection -->
+        <div class="settings-group">
+          <label class="settings-label">QR Shape</label>
+          <div class="shape-btn-group">
+            <button type="button" class="shape-btn active" data-shape="square" title="Square (Standard)">■</button>
+            <button type="button" class="shape-btn" data-shape="rounded" title="Rounded (Soft)">●</button>
+            <button type="button" class="shape-btn" data-shape="circle" title="Circle (Dots)">⚫</button>
+            <button type="button" class="shape-btn" data-shape="gapped" title="Gapped (Retro)">░</button>
+          </div>
+        </div>
+
+        <!-- Size Selection -->
+        <div class="settings-group">
+          <label class="settings-label">QR Size: <span id="sizeValue">10</span></label>
+          <div class="size-slider-wrapper">
+            <input type="range" id="sizeInput" min="6" max="22" value="10" title="Adjust module size scale" />
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="error-msg" id="errorMsg" role="alert"></div>
@@ -634,6 +775,9 @@
     const darkColorInput  = document.getElementById("darkColorInput");
     const lightColorInput = document.getElementById("lightColorInput");
     const presetBtns      = document.querySelectorAll(".preset-btn");
+    const shapeBtns       = document.querySelectorAll(".shape-btn");
+    const sizeInput       = document.getElementById("sizeInput");
+    const sizeValue       = document.getElementById("sizeValue");
 
     input.addEventListener("keydown", e => { if (e.key === "Enter") generateQR(); });
 
@@ -671,6 +815,19 @@
       });
     });
 
+    // Shape button event listeners
+    shapeBtns.forEach(sBtn => {
+      sBtn.addEventListener("click", () => {
+        shapeBtns.forEach(b => b.classList.remove("active"));
+        sBtn.classList.add("active");
+      });
+    });
+
+    // Size input display updater
+    sizeInput.addEventListener("input", e => {
+      sizeValue.textContent = e.target.value;
+    });
+
     function setError(msg) {
       errorMsg.textContent = msg;
       errorMsg.classList.toggle("visible", !!msg);
@@ -691,6 +848,10 @@
       const url = input.value.trim();
       const dark_color = darkColorInput.value;
       const light_color = lightColorInput.value;
+      const activeShapeBtn = document.querySelector(".shape-btn.active");
+      const shape = activeShapeBtn ? activeShapeBtn.getAttribute("data-shape") : "square";
+      const size = sizeInput.value;
+
       setError("");
       if (!url) { setError("Please enter a URL first~ "); return; }
 
@@ -703,7 +864,7 @@
         const res  = await fetch("/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, dark_color, light_color })
+          body: JSON.stringify({ url, dark_color, light_color, shape, size })
         });
 
         const data = await res.json();
