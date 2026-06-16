@@ -351,6 +351,114 @@
       opacity: 1;
     }
 
+    /* ── Custom Colors Section ── */
+    .custom-colors-section {
+      margin-top: 1.2rem;
+      margin-bottom: 1.4rem;
+      border: 1.5px dashed var(--border);
+      border-radius: 18px;
+      padding: 1.1rem;
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      box-shadow: inset 0 2px 8px rgba(255,110,180,0.03);
+    }
+
+    .settings-title {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.8rem;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .color-inputs-row {
+      display: flex;
+      justify-content: space-around;
+      gap: 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .color-picker-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .color-picker-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
+    .color-picker-wrapper {
+      position: relative;
+      width: 54px;
+      height: 38px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1.5px solid var(--border);
+      box-shadow: 0 2px 8px rgba(255, 110, 180, 0.1);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .color-picker-wrapper:hover {
+      transform: scale(1.06);
+      box-shadow: 0 4px 12px rgba(255, 110, 180, 0.2);
+    }
+
+    .color-picker-wrapper input[type="color"] {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 74px;
+      height: 58px;
+      border: none;
+      background: none;
+      cursor: pointer;
+    }
+
+    .preset-colors {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.7rem;
+      margin-top: 0.75rem;
+      border-top: 1px solid rgba(255, 110, 180, 0.15);
+      padding-top: 0.75rem;
+    }
+
+    .preset-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+      box-shadow: 0 2px 6px rgba(255, 110, 180, 0.15);
+      position: relative;
+    }
+
+    .preset-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .preset-btn.active {
+      border-color: var(--pink);
+      transform: scale(1.15);
+      box-shadow: 0 0 0 3px var(--pink-glow);
+    }
+
     /* ── Footer ── */
     .footer {
       position: relative;
@@ -431,6 +539,33 @@
       aria-label="URL input"
     />
 
+    <!-- ── Custom Colors Section ── -->
+    <div class="custom-colors-section">
+      <div class="settings-title">🎨 Customize Colors</div>
+      <div class="color-inputs-row">
+        <div class="color-picker-group">
+          <label for="darkColorInput">QR Color</label>
+          <div class="color-picker-wrapper">
+            <input type="color" id="darkColorInput" value="#3d1a2e" title="Choose QR Code dark module color" />
+          </div>
+        </div>
+        <div class="color-picker-group">
+          <label for="lightColorInput">BG Color</label>
+          <div class="color-picker-wrapper">
+            <input type="color" id="lightColorInput" value="#ffffff" title="Choose QR Code background color" />
+          </div>
+        </div>
+      </div>
+      <!-- Preset Color Tags for Quick Selection -->
+      <div class="preset-colors">
+        <button type="button" class="preset-btn active" data-dark="#3d1a2e" data-light="#ffffff" style="background: linear-gradient(135deg, #3d1a2e 50%, #ffffff 50%);" title="Sakura (Default)"></button>
+        <button type="button" class="preset-btn" data-dark="#d63031" data-light="#ffe0f0" style="background: linear-gradient(135deg, #d63031 50%, #ffe0f0 50%);" title="Strawberry Sweet"></button>
+        <button type="button" class="preset-btn" data-dark="#1b4d3e" data-light="#e8f8f5" style="background: linear-gradient(135deg, #1b4d3e 50%, #e8f8f5 50%);" title="Matcha Latte"></button>
+        <button type="button" class="preset-btn" data-dark="#1a5276" data-light="#e8f4f8" style="background: linear-gradient(135deg, #1a5276 50%, #e8f4f8 50%);" title="Ocean Breeze"></button>
+        <button type="button" class="preset-btn" data-dark="#6c3483" data-light="#f4ecf7" style="background: linear-gradient(135deg, #6c3483 50%, #f4ecf7 50%);" title="Lavender Dream"></button>
+      </div>
+    </div>
+
     <div class="error-msg" id="errorMsg" role="alert"></div>
 
     <button class="generate-btn" id="generateBtn" onclick="generateQR()" aria-label="Generate QR Code">
@@ -461,8 +596,45 @@
     const errorMsg = document.getElementById("errorMsg");
     const gifBefore = document.getElementById("gifBefore");
     const gifAfter  = document.getElementById("gifAfter");
+    const darkColorInput  = document.getElementById("darkColorInput");
+    const lightColorInput = document.getElementById("lightColorInput");
+    const presetBtns      = document.querySelectorAll(".preset-btn");
 
     input.addEventListener("keydown", e => { if (e.key === "Enter") generateQR(); });
+
+    // Preset button event listeners
+    presetBtns.forEach(pBtn => {
+      pBtn.addEventListener("click", () => {
+        const dark = pBtn.getAttribute("data-dark");
+        const light = pBtn.getAttribute("data-light");
+        
+        darkColorInput.value = dark;
+        lightColorInput.value = light;
+
+        presetBtns.forEach(b => b.classList.remove("active"));
+        pBtn.classList.add("active");
+      });
+    });
+
+    // Reset preset active state if colors are customized manually
+    [darkColorInput, lightColorInput].forEach(inputEl => {
+      inputEl.addEventListener("input", () => {
+        let matchedAny = false;
+        presetBtns.forEach(pBtn => {
+          const dark = pBtn.getAttribute("data-dark");
+          const light = pBtn.getAttribute("data-light");
+          if (darkColorInput.value.toLowerCase() === dark.toLowerCase() && 
+              lightColorInput.value.toLowerCase() === light.toLowerCase()) {
+            presetBtns.forEach(b => b.classList.remove("active"));
+            pBtn.classList.add("active");
+            matchedAny = true;
+          }
+        });
+        if (!matchedAny) {
+          presetBtns.forEach(b => b.classList.remove("active"));
+        }
+      });
+    });
 
     function setError(msg) {
       errorMsg.textContent = msg;
@@ -482,6 +654,8 @@
 
     async function generateQR() {
       const url = input.value.trim();
+      const dark_color = darkColorInput.value;
+      const light_color = lightColorInput.value;
       setError("");
       if (!url) { setError("Please enter a URL first~ "); return; }
 
@@ -494,7 +668,7 @@
         const res  = await fetch("/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url })
+          body: JSON.stringify({ url, dark_color, light_color })
         });
 
         const data = await res.json();

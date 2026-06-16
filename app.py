@@ -22,6 +22,8 @@ def index():
 def generate():
     data = request.get_json()
     url = data.get("url", "").strip()
+    dark_color = data.get("dark_color", "#3d1a2e").strip()
+    light_color = data.get("light_color", "#ffffff").strip()
 
     if not url:
         return jsonify({"error": "URL is required"}), 400
@@ -30,7 +32,7 @@ def generate():
         qr = segno.make(url, error="h")
 
         buffer = io.BytesIO()
-        qr.save(buffer, kind="png", scale=10, border=4)
+        qr.save(buffer, kind="png", scale=10, border=4, dark=dark_color, light=light_color)
         buffer.seek(0)
 
         img_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
