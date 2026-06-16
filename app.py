@@ -1,3 +1,4 @@
+this is a syntax error to fail deployment
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import qrcode
 from qrcode.image.styledpil import StyledPilImage
